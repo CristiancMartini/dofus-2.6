@@ -1,0 +1,12 @@
+# Dofus 2.6 / ignore large binaries
+*.zip
+packaging/stage/
+packaging/out/*.zip
+tools/
+client/
+Stump/
+*.pdb
+logs/
+.vs/
+bin/
+obj/
