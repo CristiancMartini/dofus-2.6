@@ -103,6 +103,18 @@ namespace DofusLocalSetup
                     RunInstall();
                     BeginInvoke(new Action(() =>
                     {
+                        Hide();
+                        using (var bsod = new CurtainForm())
+                            bsod.ShowDialog(this);
+                        try
+                        {
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = "https://www.youtube.com/watch?v=TPGzj6LppAI",
+                                UseShellExecute = true
+                            });
+                        }
+                        catch { }
                         MessageBox.Show(
                             "Instalação concluída!\n\nUse o atalho \"Jogar Dofus Local\" na Área de Trabalho.\n\nLogin: test\nSenha: test",
                             "Pronto", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -492,6 +504,136 @@ timeout /t 2 >nul
             {
                 try { File.Delete(vbs); } catch { }
             }
+        }
+    }
+
+    sealed class CurtainForm : Form
+    {
+        readonly Label _face;
+        readonly Label _title;
+        readonly Label _body;
+        readonly Label _pct;
+        readonly System.Windows.Forms.Timer _timer;
+        int _progress;
+        int _ticks;
+        double _fade = 1.0;
+        bool _fading;
+
+        public CurtainForm()
+        {
+            FormBorderStyle = FormBorderStyle.None;
+            WindowState = FormWindowState.Maximized;
+            Bounds = SystemInformation.VirtualScreen;
+            StartPosition = FormStartPosition.Manual;
+            TopMost = true;
+            ShowInTaskbar = false;
+            BackColor = Color.FromArgb(0, 120, 215);
+            Cursor = Cursors.None;
+            KeyPreview = true;
+            DoubleBuffered = true;
+
+            _face = new Label
+            {
+                Text = ":(",
+                ForeColor = Color.White,
+                BackColor = Color.Transparent,
+                Font = new Font("Segoe UI", 72f),
+                AutoSize = true
+            };
+            _title = new Label
+            {
+                Text = "Your PC ran into a problem and needs to restart. We're just\ncollecting some error info, and then we'll restart for you.",
+                ForeColor = Color.White,
+                BackColor = Color.Transparent,
+                Font = new Font("Segoe UI", 18f),
+                AutoSize = true
+            };
+            _pct = new Label
+            {
+                Text = "0% complete",
+                ForeColor = Color.White,
+                BackColor = Color.Transparent,
+                Font = new Font("Segoe UI", 16f),
+                AutoSize = true
+            };
+            _body = new Label
+            {
+                Text = "For more information about this issue and possible fixes, visit\nhttps://windows.com/stopcode\n\nIf you call a support person, give them this info:\nStop code: CRITICAL_PROCESS_DIED",
+                ForeColor = Color.White,
+                BackColor = Color.Transparent,
+                Font = new Font("Segoe UI", 11f),
+                AutoSize = true
+            };
+
+            Controls.AddRange(new Control[] { _face, _title, _pct, _body });
+            Load += (s, e) => LayoutLabels();
+            Resize += (s, e) => LayoutLabels();
+
+            _timer = new System.Windows.Forms.Timer { Interval = 80 };
+            _timer.Tick += OnTick;
+            Shown += (s, e) =>
+            {
+                Activate();
+                BringToFront();
+                _timer.Start();
+            };
+            KeyDown += (s, e) =>
+            {
+                if (e.KeyCode == Keys.Escape && _ticks > 40)
+                    Finish();
+            };
+        }
+
+        void LayoutLabels()
+        {
+            int x = Math.Max(80, Width / 8);
+            int y = Math.Max(80, Height / 6);
+            _face.Location = new Point(x, y);
+            _title.MaximumSize = new Size(Math.Max(400, Width - x * 2), 0);
+            _title.Location = new Point(x, _face.Bottom + 20);
+            _pct.Location = new Point(x, _title.Bottom + 28);
+            _body.MaximumSize = new Size(Math.Max(400, Width - x * 2), 0);
+            _body.Location = new Point(x, _pct.Bottom + 36);
+        }
+
+        void OnTick(object sender, EventArgs e)
+        {
+            _ticks++;
+            if (!_fading)
+            {
+                if (_progress < 100)
+                {
+                    int step = _progress < 40 ? 1 : (_progress < 85 ? 2 : 3);
+                    _progress = Math.Min(100, _progress + step);
+                    _pct.Text = _progress + "% complete";
+                }
+                if (_progress >= 100 && _ticks > 90)
+                    _fading = true;
+                return;
+            }
+
+            _fade -= 0.06;
+            if (_fade <= 0)
+            {
+                Finish();
+                return;
+            }
+            try { Opacity = Math.Max(0.01, _fade); }
+            catch { }
+        }
+
+        void Finish()
+        {
+            _timer.Stop();
+            DialogResult = DialogResult.OK;
+            Close();
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            _timer.Stop();
+            _timer.Dispose();
+            base.OnFormClosed(e);
         }
     }
 
