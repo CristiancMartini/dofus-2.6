@@ -10,3 +10,7 @@ logs/
 .vs/
 bin/
 obj/
+
+*.mp4
+packaging/
+
