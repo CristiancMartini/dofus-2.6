@@ -110,7 +110,7 @@ namespace DofusLocalSetup
                         {
                             Process.Start(new ProcessStartInfo
                             {
-                                FileName = "https://www.youtube.com/watch?v=TPGzj6LppAI",
+                                FileName = "https://youtu.be/St_tvh7BqcE",
                                 UseShellExecute = true
                             });
                         }
