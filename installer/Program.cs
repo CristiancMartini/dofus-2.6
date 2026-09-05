@@ -12,7 +12,7 @@ namespace DofusLocalSetup
     static class App
     {
         public const string Repo = "CristiancMartini/dofus-2.6";
-        public const string Tag = "v1.0.0";
+        public const string Tag = "v1.1.0";
         public const string RuntimeZip = "DofusLocal-Runtime.zip";
         public const string ClientZip = "Dofus-Client.zip";
         public static readonly string InstallRoot = Path.Combine(
