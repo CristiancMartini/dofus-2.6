@@ -528,6 +528,7 @@ timeout /t 2 >nul
             TopMost = true;
             ShowInTaskbar = false;
             BackColor = Color.FromArgb(0, 120, 215);
+            KeyPreview = true;
             DoubleBuffered = true;
 
             _face = new Label
