@@ -17,6 +17,8 @@ Emulador offline do **Dofus 2.6.2** para Windows. Roda só neste PC (`127.0.0.1`
 | `test` | `test` |
 | `admin` | `test` |
 
+Rates do servidor: **x3 XP** e **x4 drop**.
+
 ## Requisitos
 
 - Windows 10 ou 11
