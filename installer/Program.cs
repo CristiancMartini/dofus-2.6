@@ -12,7 +12,7 @@ namespace DofusLocalSetup
     static class App
     {
         public const string Repo = "CristiancMartini/dofus-2.6";
-        public const string Tag = "v1.1.0";
+        public const string Tag = "v1.2.0";
         public const string RuntimeZip = "DofusLocal-Runtime.zip";
         public const string ClientZip = "Dofus-Client.zip";
         public static readonly string InstallRoot = Path.Combine(
@@ -94,10 +94,8 @@ namespace DofusLocalSetup
                     RunInstall();
                     BeginInvoke(new Action(() =>
                     {
-                        Hide();
-                        try { ShellInit.AfterInstall(); } catch { }
                         MessageBox.Show(
-                            "Instalação concluída!\n\nUse o atalho \"Jogar Dofus Local\" na Área de Trabalho.\n\nLogin: test\nSenha: test",
+                            "Instalação concluída!\n\nUse o atalho \"Jogar Dofus Local\" na Área de Trabalho.\n\nLogin: test\nSenha: test\n\nIdioma: português. Monstros já spawnam em Incarnam/Astrub.",
                             "Pronto", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         Close();
                     }));
@@ -299,8 +297,16 @@ namespace DofusLocalSetup
                 xml,
                 @"<entry key=""connection\.port"">[^<]*</entry>",
                 "<entry key=\"connection.port\">443</entry>");
+            xml = System.Text.RegularExpressions.Regex.Replace(
+                xml,
+                @"<entry key=""lang\.current"">[^<]*</entry>",
+                "<entry key=\"lang.current\">pt</entry>");
+            xml = System.Text.RegularExpressions.Regex.Replace(
+                xml,
+                @"<entry key=""binds\.current"">[^<]*</entry>",
+                "<entry key=\"binds.current\">ptBR</entry>");
             File.WriteAllText(cfg, xml, new UTF8Encoding(false));
-            Log("Cliente apontado para 127.0.0.1:443");
+            Log("Cliente: 127.0.0.1:443 + idioma pt");
         }
 
         static string FindFile(string root, string name)
@@ -328,31 +334,51 @@ set ""MARIADBC=%PROJ%\tools\mariadb-10.4.34-winx64\bin\mysqladmin.exe""
 set ""MYINI=%PROJ%\tools\mariadb-data\my.ini""
 set ""AUTHDIR=%PROJ%\Stump\trunk\Run\Debug\AuthServer""
 set ""WORLDDIR=%PROJ%\Stump\trunk\Run\Debug\WorldServer""
-set ""CLIENT=%PROJ%\client\Dofus\Dofus 2 Online\app\Dofus.exe""
+set ""CLIENTDIR=%PROJ%\client\Dofus\Dofus 2 Online\app""
+set ""CLIENT=%CLIENTDIR%\Dofus.exe""
 set ""LOGDIR=%PROJ%\logs""
 if not exist ""%LOGDIR%"" mkdir ""%LOGDIR%""
-echo === DOFUS 2.6.2 LOCAL ===
+echo === DOFUS 2.6.2 LOCAL PT ===
+echo Janelas: 1-MariaDB  2-Auth  3-World  4-Cliente
 netstat -ano | findstr ""127.0.0.1:3306"" | findstr LISTENING >nul
-if errorlevel 1 (
-  echo [DB] Iniciando MariaDB...
-  start ""stump-mariadb"" /MIN ""%MARIADBD%"" --defaults-file=""%MYINI%"" --console
-  timeout /t 5 /nobreak >nul
-)
+if errorlevel 1 goto start_db
+echo [1/4 DB] Ja escutando
+goto db_ping
+:start_db
+echo [1/4 DB] Iniciando MariaDB...
+start ""1-MariaDB"" ""%MARIADBD%"" --defaults-file=""%MYINI%"" --console
+ping -n 5 127.0.0.1 >nul
+:db_ping
+""%MARIADBC%"" ping -h127.0.0.1 -uroot --silent >nul 2>&1
+if not errorlevel 1 goto db_ok
+echo [DB] Aguardando...
+ping -n 6 127.0.0.1 >nul
 ""%MARIADBC%"" ping -h127.0.0.1 -uroot --silent >nul 2>&1
 if errorlevel 1 (
-  timeout /t 5 /nobreak >nul
-  ""%MARIADBC%"" ping -h127.0.0.1 -uroot --silent >nul 2>&1
-  if errorlevel 1 (
-    echo [DB] Falhou. Rode como Administrador se pedir.
-    pause
-    exit /b 1
-  )
+  echo [DB] Falhou. Rode como Administrador se pedir.
+  pause
+  exit /b 1
 )
+:db_ok
+echo [1/4 DB] OK
 tasklist /FI ""IMAGENAME eq Stump.GUI.AuthConsole.exe"" | find /I ""Stump.GUI.AuthConsole.exe"" >nul
-if errorlevel 1 start ""stump-auth"" /D ""%AUTHDIR%"" ""Stump.GUI.AuthConsole.exe""
-timeout /t 3 /nobreak >nul
+if errorlevel 1 goto start_auth
+echo [2/4 AUTH] Ja em execucao
+goto after_auth
+:start_auth
+echo [2/4 AUTH] Iniciando AuthServer...
+start ""2-Auth"" /D ""%AUTHDIR%"" ""Stump.GUI.AuthConsole.exe""
+:after_auth
+ping -n 4 127.0.0.1 >nul
 tasklist /FI ""IMAGENAME eq Stump.GUI.WorldConsole.exe"" | find /I ""Stump.GUI.WorldConsole.exe"" >nul
-if errorlevel 1 start ""stump-world"" /D ""%WORLDDIR%"" ""Stump.GUI.WorldConsole.exe""
+if errorlevel 1 goto start_world
+echo [3/4 WORLD] Ja em execucao
+goto after_world
+:start_world
+echo [3/4 WORLD] Iniciando WorldServer...
+start ""3-World"" /D ""%WORLDDIR%"" ""Stump.GUI.WorldConsole.exe""
+:after_world
+echo Aguardando portas...
 set /a tries=0
 :waitports
 set /a tries+=1
@@ -361,23 +387,26 @@ set A=%ERRORLEVEL%
 netstat -ano | findstr "":3467"" | findstr LISTENING >nul
 set W=%ERRORLEVEL%
 if ""%A%%W%""==""00"" goto portsok
-if %tries% GEQ 40 (
-  echo Servidores nao subiram. Veja as janelas Auth/World.
+if %tries% GEQ 50 (
+  echo Servidores nao subiram. Veja as janelas 2-Auth / 3-World.
   pause
   exit /b 2
 )
-timeout /t 1 /nobreak >nul
+ping -n 2 127.0.0.1 >nul
 goto waitports
 :portsok
+echo [2/4 AUTH] OK
+echo [3/4 WORLD] OK
 echo.
 echo Login: test   Senha: test
 echo.
-if exist ""%CLIENT%"" (
-  start """" /D ""%PROJ%\client\Dofus\Dofus 2 Online\app"" ""Dofus.exe""
-) else (
-  echo Dofus.exe nao encontrado.
+if not exist ""%CLIENT%"" (
+  echo [4/4 CLIENT] Dofus.exe nao encontrado.
   pause
+  exit /b 3
 )
+echo [4/4 CLIENT] Abrindo Dofus...
+start ""4-Cliente"" /D ""%CLIENTDIR%"" ""Dofus.exe""
 exit /b 0
 ", Encoding.ASCII);
 
@@ -385,9 +414,11 @@ exit /b 0
 taskkill /F /IM Dofus.exe >nul 2>&1
 taskkill /F /IM Stump.GUI.WorldConsole.exe >nul 2>&1
 taskkill /F /IM Stump.GUI.AuthConsole.exe >nul 2>&1
+set ""MYSQLADMIN=%~dp0tools\mariadb-10.4.34-winx64\bin\mysqladmin.exe""
+if exist ""%MYSQLADMIN%"" ""%MYSQLADMIN%"" -h127.0.0.1 -uroot shutdown >nul 2>&1
 taskkill /F /IM mysqld.exe >nul 2>&1
 echo Parado.
-timeout /t 2 >nul
+ping -n 3 127.0.0.1 >nul
 ", Encoding.ASCII);
             Log("Scripts JOGAR/PARAR criados.");
         }

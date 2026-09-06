@@ -1,6 +1,6 @@
 # Dofus 2.6 Local
 
-Emulador offline do **Dofus 2.6.2** para Windows. Roda só neste PC (`127.0.0.1`).
+Emulador offline do **Dofus 2.6.2** para Windows. Roda só neste PC (`127.0.0.1`). Idioma **português**, com spawns de monstros/NPCs.
 
 ## Instalação
 
@@ -30,8 +30,8 @@ Se o Windows bloquear o `.exe`: **Mais informações** → **Executar assim mesm
 
 ## Uso
 
-- **Jogar:** atalho *Jogar Dofus Local* (ou `JOGAR_DOFUS_LOCAL.cmd` em `%LOCALAPPDATA%\DofusLocal`)
-- **Parar:** `PARAR_DOFUS_LOCAL.cmd` na mesma pasta
+- **Jogar:** atalho *Jogar Dofus Local* (abre MariaDB, Auth, World e o cliente)
+- **Parar:** `PARAR_DOFUS_LOCAL.cmd` em `%LOCALAPPDATA%\DofusLocal`
 
 ## Instalação offline
 
