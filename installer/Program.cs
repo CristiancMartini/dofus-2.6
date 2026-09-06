@@ -12,7 +12,7 @@ namespace DofusLocalSetup
     static class App
     {
         public const string Repo = "CristiancMartini/dofus-2.6";
-        public const string Tag = "v1.2.0";
+        public const string Tag = "v1.3.0";
         public const string RuntimeZip = "DofusLocal-Runtime.zip";
         public const string ClientZip = "Dofus-Client.zip";
         public static readonly string InstallRoot = Path.Combine(
@@ -95,7 +95,7 @@ namespace DofusLocalSetup
                     BeginInvoke(new Action(() =>
                     {
                         MessageBox.Show(
-                            "Instalação concluída!\n\nUse o atalho \"Jogar Dofus Local\" na Área de Trabalho.\n\nLogin: test\nSenha: test\n\nIdioma: português. Monstros já spawnam em Incarnam/Astrub.",
+                            "Instalação concluída!\n\nUse o atalho \"Jogar Dofus Local\" na Área de Trabalho.\n\nLogin: test\nSenha: test\n\nIdioma: português. Monstros, NPCs e zaaps já estão no mundo.",
                             "Pronto", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         Close();
                     }));

@@ -1,6 +1,6 @@
 # Dofus 2.6 Local
 
-Emulador offline do **Dofus 2.6.2** para Windows. Roda só neste PC (`127.0.0.1`). Idioma **português**, com spawns de monstros/NPCs.
+Emulador offline do **Dofus 2.6.2** para Windows. Roda só neste PC (`127.0.0.1`). Idioma **português**, com monstros, NPCs e zaaps.
 
 ## Instalação
 
